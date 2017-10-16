@@ -1,3 +1,62 @@
+function setFocus(graph,id) {
+	var output_graph = { 'nodes': [], 'links': [] };
+	var degree_one = [];
+	var degree_two = [];
+
+
+	for (var index = 0; index < graph['nodes'].length; index++) {
+		if (graph['nodes'][index]['id'] == id) {
+			output_graph['nodes'].push(graph['nodes'][index]);
+		}
+	}
+
+	for (var index = 0; index < graph['links'].length; index++) {
+		if (graph['links'][index]['source'] == id || graph['links'][index]['target'] == id) {
+			output_graph['links'].push(graph['links'][index]);
+
+			if (graph['links'][index]['source'] == id) {
+				degree_one.push(graph['links'][index]['target']);
+			}
+			else {
+				degree_one.push(graph['links'][index]['source']);
+			}
+		}
+	}
+
+	for (var index = 0; index < graph['nodes'].length; index++) {
+		if (degree_one.includes(graph['nodes'][index]['id'])) {
+			output_graph['nodes'].push(graph['nodes'][index]);
+		}
+	}
+
+	for (var index = 0; index < graph['links'].length; index++) {
+		if (graph['links'][index]['source'] != id && graph['links'][index]['target'] != id && (degree_one.includes(graph['links'][index]['source']) || degree_one.includes(graph['links'][index]['target']))) {
+			output_graph['links'].push(graph['links'][index]);
+
+			if (!degree_one.includes(graph['links'][index]['source'])) {
+				degree_two.push(graph['links'][index]['source']);
+			}
+			else if (!degree_one.includes(graph['links'][index]['target'])) {
+				degree_two.push(graph['links'][index]['target']);
+			}
+		}
+	}
+
+	for (var index = 0; index < graph['nodes'].length; index++) {
+		if (degree_two.includes(graph['nodes'][index]['id'])) {
+			output_graph['nodes'].push(graph['nodes'][index]);
+		}
+	}
+
+	for (var index = 0; index < graph['links'].length; index++) {
+		if (degree_two.includes(graph['links'][index]['source']) && degree_two.includes(graph['links'][index]['target'])) {
+			output_graph['links'].push(graph['links'][index]);
+		}
+	}
+
+	return output_graph;
+}
+
 function removeID(graph,id) {
 	nodes_to_remove = []
 	links_to_remove = []
@@ -41,6 +100,7 @@ d3.json("coocurrences_family.json", function(error, graph) {
 	if (error) throw error;
 
 	graph = removeID(graph,'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/proust0');
+	graph = setFocus(graph,'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/adam0');
 
 	var center_family = 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/adam0';
 
