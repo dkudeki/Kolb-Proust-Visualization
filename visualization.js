@@ -152,7 +152,7 @@ d3.json("coocurrences_family.json", function(error, graph) {
 
 	displayNetwork(setFocus(work_graph,center_family));
 
-/*	var x = d3.scaleLinear()
+	var x = d3.scaleLinear()
  		.domain([1880, 1930])
  		.range([0, width-50])
 		.clamp(true);
@@ -171,7 +171,7 @@ d3.json("coocurrences_family.json", function(error, graph) {
 			.attr("class", "track-overlay")
 		.call(d3.drag()
 			.on("start.interrupt", function() { slider.interrupt(); })
-			.on("start drag", function() { hue(x.invert(d3.event.x)); }));
+			.on("start drag", function() { setYear(x.invert(d3.event.x)); }));
 
 	slider.insert("g", ".track-overlay")
 		.attr("class", "ticks")
@@ -187,7 +187,12 @@ d3.json("coocurrences_family.json", function(error, graph) {
 		.attr("class", "handle")
 		.attr("r", 9);
 
-	slider.transition() // Gratuitous intro!
+	function setYear(year) {
+		handle.attr("cx", x(Math.floor(year)));
+		console.log(Math.floor(year));
+	}
+
+	/*slider.transition() // Gratuitous intro!
 		.duration(750)
 		.tween("hue", function() {
 			var i = d3.interpolate(0, 70);
