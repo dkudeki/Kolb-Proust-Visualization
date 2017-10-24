@@ -174,7 +174,7 @@ var simulation = d3.forceSimulation()
 	.force("charge", d3.forceManyBody().strength(-700))
 	.force("center", d3.forceCenter(width / 2, height / 2));
 
-d3.json("coocurrences_family_new.json", function(error, graph) {
+d3.json("coocurrences_family.json", function(error, graph) {
 	if (error) throw error;
 
 	work_graph = removeID(graph,'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/proust0');
