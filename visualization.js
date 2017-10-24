@@ -1,4 +1,4 @@
-function setFocus(graph,id) {
+function setFocus(graph,id,start_year,end_year) {
 	console.log(id);
 	console.log(graph);
 	var output_graph = { 'nodes': [], 'links': [] };
@@ -8,21 +8,36 @@ function setFocus(graph,id) {
 //Get target family/node
 	for (var index = 0; index < graph['nodes'].length; index++) {
 		if (graph['nodes'][index]['id'] == id) {
-			var temp_obj = { 'mention_count': graph['nodes'][index]['mention_count'], 'id': graph['nodes'][index]['id'], 'name': graph['nodes'][index]['name'] };
+			var mention_sum = 0;
+			for (y in graph['nodes'][index]['mention_count']) {
+				if (y >= start_year && y <= end_year) {
+					mention_sum += graph['nodes'][index]['mention_count'][y]
+				}
+			}
+			var temp_obj = { 'mention_count': mention_sum, 'id': graph['nodes'][index]['id'], 'name': graph['nodes'][index]['name'] };
+//			var temp_obj = { 'mention_count': graph['nodes'][index]['mention_count'], 'id': graph['nodes'][index]['id'], 'name': graph['nodes'][index]['name'] };
 			temp_obj['group'] = 0;
-			output_graph['nodes'].push(temp_obj);
+			if (mention_sum > 0) {
+				output_graph['nodes'].push(temp_obj);
+			}
 		}
 	}
 
 //Get links to first-degree connections
 	for (var index = 0; index < graph['links'].length; index++) {
-		console.log(graph['links'][index]['source']);
-		console.log(graph['links'][index]['source'] == id);
-		console.log(graph['links'][index]['target']);
-		console.log(graph['links'][index]['target'] == id);
 		if (graph['links'][index]['source'] == id || graph['links'][index]['target'] == id) {
-			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': graph['links'][index]['value'], 'name': graph['links'][index]['name'] };
-			output_graph['links'].push(temp_obj);
+			var value_sum = 0;
+			for (y in graph['links'][index]['value']) {
+				if (y >= start_year && y <= end_year) {
+					value_sum += graph['links'][index]['value'][y]
+				}
+			}
+			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': value_sum, 'name': graph['links'][index]['name'] };
+//			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': graph['links'][index]['value'], 'name': graph['links'][index]['name'] };
+
+			if (value_sum > 0) {
+				output_graph['links'].push(temp_obj);
+			}
 
 			if (graph['links'][index]['source'] == id) {
 				degree_one.push(graph['links'][index]['target']);
@@ -36,17 +51,37 @@ function setFocus(graph,id) {
 //Get first-degree families/nodes
 	for (var index = 0; index < graph['nodes'].length; index++) {
 		if (degree_one.includes(graph['nodes'][index]['id'])) {
-			var temp_obj = { 'mention_count': graph['nodes'][index]['mention_count'], 'id': graph['nodes'][index]['id'], 'name': graph['nodes'][index]['name'] };
+			var mention_sum = 0;
+			for (y in graph['nodes'][index]['mention_count']) {
+				if (y >= start_year && y <= end_year) {
+					mention_sum += graph['nodes'][index]['mention_count'][y]
+				}
+			}
+			var temp_obj = { 'mention_count': mention_sum, 'id': graph['nodes'][index]['id'], 'name': graph['nodes'][index]['name'] };
+//			var temp_obj = { 'mention_count': graph['nodes'][index]['mention_count'], 'id': graph['nodes'][index]['id'], 'name': graph['nodes'][index]['name'] };
 			temp_obj['group'] = 1;
-			output_graph['nodes'].push(temp_obj);
+
+			if (mention_sum > 0) {
+				output_graph['nodes'].push(temp_obj);
+			}
 		}
 	}
 
 //Get connections from first-degree families to second-degree families
 	for (var index = 0; index < graph['links'].length; index++) {
 		if (graph['links'][index]['source'] != id && graph['links'][index]['target'] != id && (degree_one.includes(graph['links'][index]['source']) || degree_one.includes(graph['links'][index]['target']))) {
-			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': graph['links'][index]['value'], 'name': graph['links'][index]['name'] };
-			output_graph['links'].push(temp_obj);
+			var value_sum = 0;
+			for (y in graph['links'][index]['value']) {
+				if (y >= start_year && y <= end_year) {
+					value_sum += graph['links'][index]['value'][y]
+				}
+			}
+			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': value_sum, 'name': graph['links'][index]['name'] };
+//			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': graph['links'][index]['value'], 'name': graph['links'][index]['name'] };
+
+			if (value_sum > 0) {
+				output_graph['links'].push(temp_obj);
+			}
 
 			if (!degree_one.includes(graph['links'][index]['source'])) {
 				degree_two.push(graph['links'][index]['source']);
@@ -60,7 +95,14 @@ function setFocus(graph,id) {
 //Get second-degree families/nodes
 	for (var index = 0; index < graph['nodes'].length; index++) {
 		if (degree_two.includes(graph['nodes'][index]['id'])) {
-			var temp_obj = { 'mention_count': graph['nodes'][index]['mention_count'], 'id': graph['nodes'][index]['id'], 'name': graph['nodes'][index]['name'] };
+			var mention_sum = 0;
+			for (y in graph['nodes'][index]['mention_count']) {
+				if (y >= start_year && y <= end_year) {
+					mention_sum += graph['nodes'][index]['mention_count'][y]
+				}
+			}
+			var temp_obj = { 'mention_count': mention_sum, 'id': graph['nodes'][index]['id'], 'name': graph['nodes'][index]['name'] };
+//			var temp_obj = { 'mention_count': graph['nodes'][index]['mention_count'], 'id': graph['nodes'][index]['id'], 'name': graph['nodes'][index]['name'] };
 			temp_obj['group'] = 2;
 			output_graph['nodes'].push(temp_obj);
 		}
@@ -69,8 +111,18 @@ function setFocus(graph,id) {
 //Get links between second-degree families
 	for (var index = 0; index < graph['links'].length; index++) {
 		if (degree_two.includes(graph['links'][index]['source']) && degree_two.includes(graph['links'][index]['target'])) {
-			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': graph['links'][index]['value'], 'name': graph['links'][index]['name'] };
-			output_graph['links'].push(temp_obj);
+			var value_sum = 0;
+			for (y in graph['links'][index]['value']) {
+				if (y >= start_year && y <= end_year) {
+					value_sum += graph['links'][index]['value'][y]
+				}
+			}
+			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': value_sum, 'name': graph['links'][index]['name'] };
+//			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': graph['links'][index]['value'], 'name': graph['links'][index]['name'] };
+
+			if (value_sum > 0) {
+				output_graph['links'].push(temp_obj);
+			}
 		}
 	}
 
@@ -122,39 +174,16 @@ var simulation = d3.forceSimulation()
 	.force("charge", d3.forceManyBody().strength(-700))
 	.force("center", d3.forceCenter(width / 2, height / 2));
 
-d3.json("coocurrences_family.json", function(error, graph) {
+d3.json("coocurrences_family_new.json", function(error, graph) {
 	if (error) throw error;
 
 	work_graph = removeID(graph,'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/proust0');
 
 	var center_family = 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/adam0';
 
-	var select = d3.select('body')
-		.append('select')
-			.attr('class','select')
-			.on('change',onchange);
-
-	var options = select
-		.selectAll('option')
-		.data(work_graph['nodes']).enter()
-		.append('option')
-			.text(function(d) { return d.name })
-			.attr('value', function(d) { return d.id });
-
-	function onchange() {
-		selectValue = d3.select('select').property('value');
-		center_family = selectValue;
-		svg.selectAll("g").remove();
-		displayNetwork(setFocus(work_graph,selectValue));
-	}
-
-	//Set date range. Widest is 1633-1991
-
-	displayNetwork(setFocus(work_graph,center_family));
-
 	var x = d3.scaleLinear()
- 		.domain([1880, 1930])
- 		.range([0, width-50])
+		.domain([1880, 1930])
+		.range([0, width-50])
 		.clamp(true);
 
 	var slider = svg.append("g")
@@ -188,8 +217,10 @@ d3.json("coocurrences_family.json", function(error, graph) {
 		.attr("r", 9);
 
 	function setYear(year) {
-		handle.attr("cx", x(Math.floor(year)));
-		console.log(Math.floor(year));
+		year = Math.floor(year);
+		handle.attr("cx", x(year));
+//		svg.selectAll("g").remove();
+		displayNetwork(setFocus(work_graph,center_family,year,end_year));
 	}
 
 	/*slider.transition() // Gratuitous intro!
@@ -204,7 +235,39 @@ d3.json("coocurrences_family.json", function(error, graph) {
 		svg.style("background-color", d3.hsl(h, 0.8, 0.8));
 	}*/
 
+	var start_year = 1880;
+	var end_year = 1930;
+
+	var select = d3.select('body')
+		.append('select')
+			.attr('class','select')
+			.on('change',onchange);
+
+	var options = select
+		.selectAll('option')
+		.data(work_graph['nodes']).enter()
+		.append('option')
+			.text(function(d) { return d.name })
+			.attr('value', function(d) { return d.id });
+
+	function onchange() {
+		selectValue = d3.select('select').property('value');
+		center_family = selectValue;
+/*		svg.selectAll("nodes").remove();
+		svg.selectAll("links").remove();*/
+		displayNetwork(setFocus(work_graph,selectValue,start_year,end_year));
+	}
+
+	//Set date range. Widest is 1633-1991
+
+	displayNetwork(setFocus(work_graph,center_family,start_year,end_year));
+
 	function displayNetwork(display_graph) {
+		var links = svg.selectAll(".links")
+			.data(display_graph);
+
+		links.attr("class","update");
+
 		var link = svg.append("g")
 			.attr("class", "links")
 			.selectAll("line")
@@ -216,7 +279,10 @@ d3.json("coocurrences_family.json", function(error, graph) {
 				.on("mouseout", function(d) { d3.select(this).style("stroke",'#999') });
 
 		link.append("title")
-			.text(function(d) { return d.name; });
+			.text(function(d) { return d.name + ' ' + d.value; });
+
+		var nodes = svg.selectAll(".nodes")
+			.data(display_graph);
 
 		var node = svg.append("g")
 			.attr("class", "nodes")
@@ -254,7 +320,11 @@ d3.json("coocurrences_family.json", function(error, graph) {
 		var yScale = d3.scaleLinear()
 			.domain([0,height]).range([0, height]);
 
-		svg.call(zoomer)
+		svg.call(zoomer);
+
+		links.exit().remove();
+
+		nodes.exit().remove();
 
 		function ticked() {
 			link
