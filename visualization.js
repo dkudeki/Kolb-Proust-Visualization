@@ -50,28 +50,6 @@ function buildVisualization() {
 		//Set date range. Widest is 1633-1991
 
 		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height);
-
-		const type = d3.annotationLabel;
-
-		const annotations = [{
-			note: {
-				label: "Test Label",
-				title: "Test Title"
-			},
-			x: 150,
-			y: 150,
-			dy: 100,
-			dx: 100
-		}]
-
-		const makeAnnotations = d3.annotation()
-			.type(d3.annotationLabel)
-			.annotations(annotations);
-
-		svg.attr("class","annotation-group")
-			.append("g")
-			.call(makeAnnotations);
-
 //		d3.annotation().annotations(annotations);
 	});
 }
@@ -139,6 +117,27 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 	links.exit().remove();
 
 	nodes.exit().remove();
+
+	const type = d3.annotationLabel;
+
+	const annotations = [{
+		note: {
+			label: "Test Label",
+			title: "Test Title"
+		},
+		x: 150,
+		y: 150,
+		dy: 100,
+		dx: 100
+	}]
+
+	const makeAnnotations = d3.annotation()
+		.type(d3.annotationLabel)
+		.annotations(annotations);
+
+	svg.attr("class","annotation-group")
+		.append("g")
+		.call(makeAnnotations);
 
 	function ticked() {
 		link
