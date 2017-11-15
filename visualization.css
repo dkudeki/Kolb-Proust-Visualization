@@ -45,3 +45,16 @@
 	stroke-opacity: 0.5;
 	stroke-width: 1.25px;
 }
+
+div.tooltip {
+	opacity: .75;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	padding-left: 3px;
+	padding-right: 4px;
+	text-align: center;
+	background-color: black;
+	color: white;
+	border: 1px white;
+	border-radius: 3px;
+}

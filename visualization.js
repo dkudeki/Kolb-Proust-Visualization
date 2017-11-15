@@ -1,6 +1,7 @@
 buildVisualization();
 
 function buildVisualization() {
+	//Build the frame for the network
 	var svg = d3.select("#network")
 		width = +svg.attr("width"),
 		height = +svg.attr("height");
@@ -9,19 +10,19 @@ function buildVisualization() {
 		.domain(d3.range(1,4))
 		.range(['#01416e','#428baf','#96c9f3']);
 
+	//Create links between nodes, sets how much nodes repulse one another, centers the graph
 	var simulation = d3.forceSimulation()
 		.force("link", d3.forceLink().id(function(d) { return d.id; }))
-	//	.force("charge", d3.forceManyBody().strength(function(d) { return -500 * d.mention_count; }))
 		.force("charge", d3.forceManyBody().strength(-700))
 		.force("center", d3.forceCenter(width / 2, height / 2));
 
+	//Read in model data, build visualization from that
 	d3.json("coocurrences_family.json", function(error, graph) {
 		if (error) throw error;
 
+		//Remove proust, then initialize graph with ceter family and date range
 		work_graph = removeID(graph,'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/proust0');
-
 		var center_family = 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/adam0';
-
 		var start_year = 1880;
 		var end_year = 1930;
 
@@ -42,12 +43,8 @@ function buildVisualization() {
 		function onchange() {
 			selectValue = d3.select('select').property('value');
 			center_family = selectValue;
-	/*		svg.selectAll("nodes").remove();
-			svg.selectAll("links").remove();*/
 			displayNetwork(setFocus(work_graph,selectValue,start_year,end_year),svg,simulation,color,width,height);
 		}
-
-		//Set date range. Widest is 1633-1991
 
 		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height);
 //		d3.annotation().annotations(annotations);
@@ -120,7 +117,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 
 	const type = d3.annotationLabel;
 
-	const annotations = [{
+/*	const annotations = [{
 		note: {
 			label: "Test Label",
 			title: "Test Title"
@@ -137,7 +134,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 
 	svg.attr("class","annotation-group")
 		.append("g")
-		.call(makeAnnotations);
+		.call(makeAnnotations);*/
 
 	function ticked() {
 		link
@@ -212,6 +209,14 @@ function setupSlider(handle1,handle2,displayNetwork,network_svg,simulation,color
 			.attr("text-anchor", "middle")
 			.text(function(d) { return d; });
 
+	var tooltip = d3.select("body")
+		.append("div")
+		.style("position","absolute")
+		.style("z-index","10")
+		.style("visibility","hidden")
+		.text("Hello World")
+		.attr("class","tooltip");
+
 	var handle = slider.selectAll("handle")
 		.data([0,1])
 		.enter().append("circle", ".track-overlay")
@@ -219,12 +224,13 @@ function setupSlider(handle1,handle2,displayNetwork,network_svg,simulation,color
 			.attr("r", 9)
 			.attr("cx", function(d) { return x(slider_vals[d]); })
 			.attr("id", function(d) { return "handle" + d; })
+			.on("mouseover", function() { return tooltip.style("visibility","visible").text(Math.floor(x.invert(d3.select(this).attr("cx")))); })
+			.on("mousemove", function() { return tooltip.style("top",595 + "px").style("left",(Number(d3.select(this).attr("cx"))+14) + "px"); })
+			.on("mouseout", function() { return tooltip.style("visibility","hidden"); })
 			.call(
 				d3.drag()
 					.on("start", startDrag)
 					.on("drag", drag)
-//					.on("end", endDrag)
-//					.on("start.interrupt", function() { slider.interrupt(); })
 					.on("end", function() { setYear(d3.select(this),x.invert(d3.event.x),network_svg,simulation,color,network_width,network_height,center_family); }));
 
 	function setYear(target,new_year,network_svg,simulation,color,network_width,network_height,center_family) {
@@ -270,5 +276,8 @@ function setupSlider(handle1,handle2,displayNetwork,network_svg,simulation,color
 		selRange
 			.attr("cx",x1)
 			.attr("cx",x2)
+
+		tooltip.style("left",(x1+14) + "px")
+			.text(Math.floor(x.invert(x1)));
 	}
 }
