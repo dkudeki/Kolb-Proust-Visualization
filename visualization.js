@@ -64,6 +64,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 		.enter().append("line")
 //			.attr("stroke-width", function(d) { return d.value; })
 			.attr("stroke-width", function(d) { return 1 + Math.log2(d.value); })
+			.attr("id", function(d) { return d.source.substring(d.source.lastIndexOf("/")+1) + d.target.substring(d.target.lastIndexOf("/")+1); })
 			.on("mouseover", function(d) { d3.select(this).style("stroke",'#900') })
 			.on("mouseout", function(d) { d3.select(this).style("stroke",'#999') });
 
@@ -81,6 +82,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 //			.attr("r", function(d) { return 4 + d.mention_count/2; })
 			.attr("r", function(d) { return 5 +  Math.log2(d.mention_count); })
 			.attr("fill", function(d) { return color(d.group); })
+			.attr("id", function(d) { return d.id.substring(d.id.lastIndexOf("/")+1); })
 			.call(d3.drag()
 				.on("start", dragstarted)
 				.on("drag", dragged)
