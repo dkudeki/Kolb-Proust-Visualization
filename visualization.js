@@ -218,19 +218,35 @@ function setupSlider(handle1,handle2,displayNetwork,network_svg,simulation,color
 			.attr("class", "handle")
 			.attr("r", 9)
 			.attr("cx", function(d) { return x(slider_vals[d]); })
+			.attr("id", function(d) { return "handle" + d; })
 			.call(
 				d3.drag()
 					.on("start", startDrag)
 					.on("drag", drag)
 //					.on("end", endDrag)
 //					.on("start.interrupt", function() { slider.interrupt(); })
-					.on("start drag", function() { setYear(x.invert(d3.event.x),network_svg,simulation,color,network_width,network_height,center_family,1930); }));
+					.on("end", function() { setYear(d3.select(this),x.invert(d3.event.x),network_svg,simulation,color,network_width,network_height,center_family); }));
 
-	function setYear(year,network_svg,simulation,color,network_width,network_height,center_family,end_year) {
-		year = Math.floor(year);
-		handle.attr("cx", x(year));
-//		svg.selectAll("g").remove();
-		displayNetwork(setFocus(work_graph,center_family,year,end_year),network_svg,simulation,color,network_width,network_height);
+	function setYear(target,new_year,network_svg,simulation,color,network_width,network_height,center_family) {
+		year = Math.floor(new_year);
+		target.attr("cx", x(year));
+
+		var handle0_year = x.invert(slider.select("#handle0").attr("cx"));
+		var handle1_year = x.invert(slider.select("#handle1").attr("cx"));
+
+		var start_year;
+		var end_year;
+		if (handle0_year < handle1_year) {
+			start_year = handle0_year;
+			end_year = handle1_year;
+		}
+		else {
+			start_year = handle1_year;
+			end_year = handle0_year;
+		}
+
+//		alert(start_year + "-" + end_year);
+		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),network_svg,simulation,color,network_width,network_height);
 	}
 
 	function startDrag() {
@@ -254,11 +270,5 @@ function setupSlider(handle1,handle2,displayNetwork,network_svg,simulation,color
 		selRange
 			.attr("cx",x1)
 			.attr("cx",x2)
-	}
-
-	function endDrag(d) {
-		var v = Math.round
-
-		setYear(x.invert(d3.event.x),network_svg,simulation,color,network_width,network_height,center_family,1930);
 	}
 }
