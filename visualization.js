@@ -22,12 +22,22 @@ function buildVisualization() {
 
 		//Remove proust, then initialize graph with ceter family and date range
 		work_graph = removeID(graph,'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/proust0');
-		var center_family = 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/adam0';
+
+		var current_url = new URL(window.location.href);
+		var target_family = current_url.searchParams.get("center");
+		if (target_family && work_graph['nodes'].map(a => a.id).indexOf('http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + target_family) > -1) {
+			var center_family = 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + target_family;
+		}
+		else {
+			var center_family = 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/adam0';
+		}
+
 		var start_year = 1880;
 		var end_year = 1930;
 
 		setupSlider(start_year,end_year,displayNetwork,svg,simulation,color,width,height,center_family);
 
+		//Build selection dropdown
 		var select = d3.select('body')
 			.append('select')
 				.attr('class','select')
@@ -45,6 +55,8 @@ function buildVisualization() {
 			center_family = selectValue;
 			displayNetwork(setFocus(work_graph,selectValue,start_year,end_year),svg,simulation,color,width,height);
 		}
+
+		d3.select('select').property('value',center_family);
 
 		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height);
 //		d3.annotation().annotations(annotations);
@@ -66,7 +78,8 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 			.attr("stroke-width", function(d) { return 1 + Math.log2(d.value); })
 			.attr("id", function(d) { return d.source.substring(d.source.lastIndexOf("/")+1) + d.target.substring(d.target.lastIndexOf("/")+1); })
 			.on("mouseover", function(d) { d3.select(this).style("stroke",'#900') })
-			.on("mouseout", function(d) { d3.select(this).style("stroke",'#999') });
+			.on("mouseout", function(d) { d3.select(this).style("stroke",'#999') })
+			.on("contextmenu", function(d) { d3.event.preventDefault(); });
 
 	link.append("title")
 		.text(function(d) { return d.name + ' ' + d.value; });
@@ -86,6 +99,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 			.attr("class", function(d) { return d.group; })
 			.on("mouseover", function(d) { d3.select(this).attr("fill","#900") })
 			.on("mouseout", function(d) { d3.select(this).attr("fill", color(d.group)) })
+			.on("contextmenu", function(d) { d3.event.preventDefault(); })
 			.call(d3.drag()
 				.on("start", dragstarted)
 				.on("drag", dragged)
