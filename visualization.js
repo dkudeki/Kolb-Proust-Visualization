@@ -53,6 +53,19 @@ function buildVisualization() {
 		function onchange() {
 			selectValue = d3.select('select').property('value');
 			center_family = selectValue;
+
+			var new_url = current_url.href;
+			console.log(new_url.indexOf('?'));
+			console.log(new_url.substring(0,new_url.indexOf('?')));
+			if (current_url.href.indexOf('?') == -1) {
+				new_url += '?center=' + center_family.substring(center_family.lastIndexOf('/')+1);
+			}
+			else {
+				new_url = new_url.substring(0,new_url.indexOf('?')) + "?center=" + center_family.substring(center_family.lastIndexOf('/')+1);
+			}
+
+			window.history.replaceState(null,null,new_url);
+
 			displayNetwork(setFocus(work_graph,selectValue,start_year,end_year),svg,simulation,color,width,height);
 		}
 
