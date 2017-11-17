@@ -35,7 +35,9 @@ function buildVisualization() {
 		var start_year = 1880;
 		var end_year = 1930;
 
-		setupSlider(start_year,end_year,displayNetwork,svg,simulation,color,width,height,center_family);
+		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height);
+
+		setupSlider(start_year,end_year,work_graph,svg,simulation,color,width,height,center_family);
 
 		//Build selection dropdown
 		var select = d3.select('body')
@@ -51,12 +53,9 @@ function buildVisualization() {
 				.attr('value', function(d) { return d.id });
 
 		function onchange() {
-			selectValue = d3.select('select').property('value');
-			center_family = selectValue;
+			center_family = d3.select('select').property('value');
 
 			var new_url = current_url.href;
-			console.log(new_url.indexOf('?'));
-			console.log(new_url.substring(0,new_url.indexOf('?')));
 			if (current_url.href.indexOf('?') == -1) {
 				new_url += '?center=' + center_family.substring(center_family.lastIndexOf('/')+1);
 			}
@@ -64,14 +63,15 @@ function buildVisualization() {
 				new_url = new_url.substring(0,new_url.indexOf('?')) + "?center=" + center_family.substring(center_family.lastIndexOf('/')+1);
 			}
 
-			window.history.replaceState(null,null,new_url);
+//			setYear(d3.select("#handle0"),1880,svg,simulation,color,width,height,center_family);
+//			setYear(d3.select("#handle1"),1930,svg,simulation,color,width,height,center_family);
+			changeSliderFocus(work_graph,svg,simulation,color,width,height,center_family)
+			displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height);
 
-			displayNetwork(setFocus(work_graph,selectValue,start_year,end_year),svg,simulation,color,width,height);
+			window.history.replaceState(null,null,new_url);
 		}
 
 		d3.select('select').property('value',center_family);
-
-		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height);
 //		d3.annotation().annotations(annotations);
 	});
 }
@@ -109,7 +109,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 			.attr("r", function(d) { return 5 +  Math.log2(d.mention_count); })
 			.attr("fill", function(d) { return color(d.group); })
 			.attr("id", function(d) { return d.id.substring(d.id.lastIndexOf("/")+1); })
-			.attr("class", function(d) { return d.group; })
+			.attr("class", function(d) { return "group" + d.group; })
 			.on("mouseover", function(d) { d3.select(this).attr("fill","#900") })
 			.on("mouseout", function(d) { d3.select(this).attr("fill", color(d.group)) })
 			.on("contextmenu", function(d) { d3.event.preventDefault(); })
@@ -205,7 +205,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 	}
 }
 
-function setupSlider(handle1,handle2,displayNetwork,network_svg,simulation,color,network_width,network_height,center_family) {
+function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,network_width,network_height,center_family) {
 	var slider_vals = [handle1, handle2];
 
 	var svg = d3.select("#timeline"),
@@ -263,29 +263,7 @@ function setupSlider(handle1,handle2,displayNetwork,network_svg,simulation,color
 				d3.drag()
 					.on("start", startDrag)
 					.on("drag", drag)
-					.on("end", function() { setYear(d3.select(this),x.invert(d3.event.x),network_svg,simulation,color,network_width,network_height,center_family); }));
-
-	function setYear(target,new_year,network_svg,simulation,color,network_width,network_height,center_family) {
-		year = Math.floor(new_year);
-		target.attr("cx", x(year));
-
-		var handle0_year = x.invert(slider.select("#handle0").attr("cx"));
-		var handle1_year = x.invert(slider.select("#handle1").attr("cx"));
-
-		var start_year;
-		var end_year;
-		if (handle0_year < handle1_year) {
-			start_year = handle0_year;
-			end_year = handle1_year;
-		}
-		else {
-			start_year = handle1_year;
-			end_year = handle0_year;
-		}
-
-//		alert(start_year + "-" + end_year);
-		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),network_svg,simulation,color,network_width,network_height);
-	}
+					.on("end", function() { setYear(d3.select(this),x.invert(d3.event.x),work_graph,network_svg,simulation,color,network_width,network_height,center_family); }));
 
 	function startDrag() {
 		d3.select(this).raise().classed("active",true);
@@ -312,4 +290,41 @@ function setupSlider(handle1,handle2,displayNetwork,network_svg,simulation,color
 		tooltip.style("left",(x1+14) + "px")
 			.text(Math.floor(x.invert(x1)));
 	}
+}
+
+function changeSliderFocus(work_graph,svg,simulation,color,width,height,center_family) {
+	d3.selectAll("handle")
+		.call(
+			d3.drag()
+				.on("end", function() { setYear(d3.select(this),x.invert(d3.event.x),work_graph,network_svg,simulation,color,network_width,network_height); }))
+	setYear(d3.select("#handle0"),1880,work_graph,svg,simulation,color,width,height,center_family);
+	setYear(d3.select("#handle1"),1930,work_graph,svg,simulation,color,width,height,center_family);
+}
+
+function setYear(target,new_year,work_graph,network_svg,simulation,color,network_width,network_height,center_family) {
+	var slider = d3.select(".slider");
+	var x = d3.scaleLinear()
+		.domain([1880, 1930])
+		.range([0, d3.select("#timeline").attr("width")-50])
+		.clamp(true);
+
+	year = Math.floor(new_year);
+	target.attr("cx", x(year));
+
+	var handle0_year = x.invert(slider.select("#handle0").attr("cx"));
+	var handle1_year = x.invert(slider.select("#handle1").attr("cx"));
+
+	var start_year;
+	var end_year;
+	if (handle0_year < handle1_year) {
+		start_year = handle0_year;
+		end_year = handle1_year;
+	}
+	else {
+		start_year = handle1_year;
+		end_year = handle0_year;
+	}
+
+//		alert(start_year + "-" + end_year);
+	displayNetwork(setFocus(work_graph,center_family,start_year,end_year),network_svg,simulation,color,network_width,network_height);
 }
