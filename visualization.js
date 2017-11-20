@@ -126,12 +126,13 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 				}]
 
 				const makeAnnotations = d3.annotation()
-					.type(d3.annotationLabel)
+					.type(type)
 					.annotations(annotations);
 
 				svg.attr("class","annotation-group")
 					.append("g")
 					.attr("class","node-annotation")
+					.attr("transform",d3.select(this).attr("transform"))
 					.call(makeAnnotations);
 			})
 			.on("mouseout", function(d) { 
@@ -144,8 +145,8 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 				.on("drag", dragged)
 				.on("end", dragended));
 
-	node.append("title")
-		.text(function(d) { return d.name + ' ' + d.mention_count; });
+/*	node.append("title")
+		.text(function(d) { return d.name + ' ' + d.mention_count; });*/
 
 	d3.selectAll('g').select("nodes")
 		.attr("cx", function(d) { return d.x; })
