@@ -58,3 +58,11 @@ div.tooltip {
 	border: 1px white;
 	border-radius: 3px;
 }
+
+.node-annotation text {
+	font-family: sans-serif;
+}
+
+.node-annotation text.annotation-note-title {
+	text-shadow: 0px 0px 2px white;
+}

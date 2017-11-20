@@ -72,8 +72,13 @@ function buildVisualization() {
 		}
 
 		d3.select('select').property('value',center_family);
-		d3.annotation().annotations(annotations);
 	});
+}
+
+function makeNameReadable(name) {
+	let comma_index = name.indexOf(',')
+	let revised_name = name.substring(comma_index+1) + ' ' + name.substring(0,comma_index) + ':';
+	return revised_name;
 }
 
 function displayNetwork(display_graph,svg,simulation,color,width,height) {
@@ -112,20 +117,21 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 			.attr("class", function(d) { return "group" + d.group; })
 			.on("mouseover", function(d) { 
 				d3.select(this).attr("fill","#900");
-				const type = d3.annotationCallout;
+				let type = d3.annotationCallout;
 
-				const annotations = [{
+				let annotations = [{
 					note: {
-						title: d.name + ' ' + d.mention_count
+						title: makeNameReadable(d.name) + ' ' + d.mention_count,
+						wrap: 400
 					},
-					x: d.x,
-					y: d.y,
+					x: d.x + ((5 + Math.log2(d.mention_count))/Math.sqrt(2)),
+					y: d.y + ((5 + Math.log2(d.mention_count))/Math.sqrt(2)),
 					dx: 25,
 					dy: 25,
 					color: "black"
 				}]
 
-				const makeAnnotations = d3.annotation()
+				let makeAnnotations = d3.annotation()
 					.type(type)
 					.annotations(annotations);
 
@@ -133,6 +139,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 					.append("g")
 					.attr("class","node-annotation")
 					.attr("transform",d3.select(this).attr("transform"))
+//					.style('font-size',"16pt")
 					.call(makeAnnotations);
 			})
 			.on("mouseout", function(d) { 
@@ -189,6 +196,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 	function zoom() {
 		node.attr("transform",d3.event.transform);
 		link.attr("transform",d3.event.transform);
+		d3.select(".node-annotation").attr("transform",d3.event.transform);
 		d3.event.transform.rescaleX(xScale);
 		d3.event.transform.rescaleY(yScale);
 	}
