@@ -72,7 +72,7 @@ function buildVisualization() {
 		}
 
 		d3.select('select').property('value',center_family);
-//		d3.annotation().annotations(annotations);
+		d3.annotation().annotations(annotations);
 	});
 }
 
@@ -106,12 +106,38 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 		.data(display_graph.nodes)
 		.enter().append("circle")
 //			.attr("r", function(d) { return 4 + d.mention_count/2; })
-			.attr("r", function(d) { return 5 +  Math.log2(d.mention_count); })
+			.attr("r", function(d) { return 5 + Math.log2(d.mention_count); })
 			.attr("fill", function(d) { return color(d.group); })
 			.attr("id", function(d) { return d.id.substring(d.id.lastIndexOf("/")+1); })
 			.attr("class", function(d) { return "group" + d.group; })
-			.on("mouseover", function(d) { d3.select(this).attr("fill","#900") })
-			.on("mouseout", function(d) { d3.select(this).attr("fill", color(d.group)) })
+			.on("mouseover", function(d) { 
+				d3.select(this).attr("fill","#900");
+				const type = d3.annotationCallout;
+
+				const annotations = [{
+					note: {
+						title: d.name + ' ' + d.mention_count
+					},
+					x: d.x,
+					y: d.y,
+					dx: 25,
+					dy: 25,
+					color: "black"
+				}]
+
+				const makeAnnotations = d3.annotation()
+					.type(d3.annotationLabel)
+					.annotations(annotations);
+
+				svg.attr("class","annotation-group")
+					.append("g")
+					.attr("class","node-annotation")
+					.call(makeAnnotations);
+			})
+			.on("mouseout", function(d) { 
+				d3.select(this).attr("fill", color(d.group))
+				d3.select(".node-annotation").remove();
+			})
 			.on("contextmenu", function(d) { d3.event.preventDefault(); })
 			.call(d3.drag()
 				.on("start", dragstarted)
@@ -146,27 +172,6 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 	links.exit().remove();
 
 	nodes.exit().remove();
-
-	const type = d3.annotationLabel;
-
-/*	const annotations = [{
-		note: {
-			label: "Test Label",
-			title: "Test Title"
-		},
-		x: 150,
-		y: 150,
-		dy: 100,
-		dx: 100
-	}]
-
-	const makeAnnotations = d3.annotation()
-		.type(d3.annotationLabel)
-		.annotations(annotations);
-
-	svg.attr("class","annotation-group")
-		.append("g")
-		.call(makeAnnotations);*/
 
 	function ticked() {
 		link
@@ -203,6 +208,38 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 		d.fx = null;
 		d.fy = null;
 	}
+
+/*	const type = d3.annotationLabel;
+
+	const annotations = [{
+		note: {
+			label: "Test Label",
+			title: "Test Title"
+		},
+		x: 150,
+		y: 150,
+		dy: 100,
+		dx: 100
+	}]
+
+	const makeAnnotations = d3.annotation()
+		.type(d3.annotationLabel)
+		.annotations(annotations);
+/*		.annotations(display_graph['nodes'].map((d,i) => {
+			return {
+				note: {
+					title: d.name
+				},
+				dx: d.x,
+				dy: d.y,
+				x: d.x + 25,
+				y: d.y + 25
+			}
+		}));*/
+
+/*	svg.attr("class","annotation-group")
+		.append("g")
+		.call(makeAnnotations);*/
 }
 
 function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,network_width,network_height,center_family) {
