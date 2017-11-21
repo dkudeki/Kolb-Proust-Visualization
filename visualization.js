@@ -37,7 +37,7 @@ function buildVisualization() {
 		var start_year = 1880;
 		var end_year = 1930;
 
-		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height);
+		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height,center_family);
 
 		setupSlider(start_year,end_year,work_graph,svg,simulation,color,width,height,center_family);
 
@@ -68,7 +68,7 @@ function buildVisualization() {
 //			setYear(d3.select("#handle0"),1880,svg,simulation,color,width,height,center_family);
 //			setYear(d3.select("#handle1"),1930,svg,simulation,color,width,height,center_family);
 			changeSliderFocus(work_graph,svg,simulation,color,width,height,center_family)
-			displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height);
+			displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height,center_family);
 
 			window.history.replaceState(null,null,new_url);
 		}
@@ -83,7 +83,7 @@ function makeNameReadable(name) {
 	return revised_name.charAt(0).toUpperCase() + revised_name.slice(1);
 }
 
-function displayNetwork(display_graph,svg,simulation,color,width,height) {
+function displayNetwork(display_graph,svg,simulation,color,width,height,center_family) {
 	//Select links for updating
 	var links = svg.selectAll(".links")
 		.data(display_graph);
@@ -107,6 +107,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 				let annotations = [{
 					note: {
 						title: d.name + ' ' + d.value,
+//						label: ()
 						wrap: 400
 					},
 					x: (d.source.x + d.target.x)/2,
@@ -130,8 +131,8 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 			.on("mouseout", function(d) { 
 				d3.select(this).style("stroke",'#999');
 				d3.select(".link-annotation").remove();
-			})
-			.on("contextmenu", function(d) { d3.event.preventDefault(); });
+			});
+//			.on("contextmenu", function(d) { d3.event.preventDefault(); });
 
 /*	link.append("title")
 		.text(function(d) { return d.name + ' ' + d.value; });*/
@@ -185,7 +186,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 				d3.select(this).attr("fill", color(d.group))
 				d3.select(".node-annotation").remove();
 			})
-			.on("contextmenu", function(d) { d3.event.preventDefault(); })
+			.on("contextmenu", function(d) { d3.select(this).attr("class","context-menu")})
 			.call(d3.drag()
 				.on("start", dragstarted)
 				.on("drag", dragged)
@@ -389,5 +390,16 @@ function setYear(target,new_year,work_graph,network_svg,simulation,color,network
 	}
 
 //		alert(start_year + "-" + end_year);
-	displayNetwork(setFocus(work_graph,center_family,start_year,end_year),network_svg,simulation,color,network_width,network_height);
+	displayNetwork(setFocus(work_graph,center_family,start_year,end_year),network_svg,simulation,color,network_width,network_height,center_family);
 }
+
+$(function() {
+	$.contextMenu({
+		selector: '.context-menu',
+		items: {
+			"center": {name: "Center Graph on Node"},
+			"degree": {name: "Show Single Degree of Separation"},
+			"annotate": {name: "Add Annotation"}
+		}
+	});
+});

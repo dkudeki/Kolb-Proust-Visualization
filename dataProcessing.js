@@ -1,6 +1,4 @@
 function setFocus(graph,id,start_year,end_year) {
-	console.log(id);
-	console.log(graph);
 	var output_graph = { 'nodes': [], 'links': [] };
 	var degree_one = [];
 	var degree_two = [];
@@ -126,8 +124,6 @@ function setFocus(graph,id,start_year,end_year) {
 		}
 	}
 
-	console.log(graph);
-	console.log(output_graph);
 	return output_graph;
 }
 
