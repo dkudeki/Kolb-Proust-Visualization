@@ -400,6 +400,15 @@ $(function() {
 			"center": {name: "Center Graph on Node"},
 			"degree": {name: "Show Single Degree of Separation"},
 			"annotate": {name: "Add Annotation"}
+		},
+		callback: function(key, options) {
+			if (key == 'center') {
+				location.href = "http://xtf.grainger.illinois.edu/kpnetwork/?center=" + this[0]['id'];
+			}
+			else {
+				var m = "clicked: " + key;
+				alert(m);
+			}
 		}
 	});
 });
