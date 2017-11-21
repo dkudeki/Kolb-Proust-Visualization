@@ -23,6 +23,7 @@ function buildVisualization() {
 		//Remove proust, then initialize graph with ceter family and date range
 		work_graph = removeID(graph,'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/proust0');
 
+		//Set center node of graph
 		var current_url = new URL(window.location.href);
 		var target_family = current_url.searchParams.get("center");
 		if (target_family && work_graph['nodes'].map(a => a.id).indexOf('http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + target_family) > -1) {
@@ -32,6 +33,7 @@ function buildVisualization() {
 			var center_family = 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/adam0';
 		}
 
+		//Default year bounds
 		var start_year = 1880;
 		var end_year = 1930;
 
@@ -76,17 +78,19 @@ function buildVisualization() {
 }
 
 function makeNameReadable(name) {
-	let comma_index = name.indexOf(',')
-	let revised_name = name.substring(comma_index+1) + ' ' + name.substring(0,comma_index) + ':';
-	return revised_name;
+	var comma_index = name.indexOf(',')
+	var revised_name = name.substring(comma_index+1).trim() + ' ' + name.substring(0,comma_index) + ':';
+	return revised_name.charAt(0).toUpperCase() + revised_name.slice(1);
 }
 
 function displayNetwork(display_graph,svg,simulation,color,width,height) {
+	//Select links for updating
 	var links = svg.selectAll(".links")
 		.data(display_graph);
 
 	links.attr("class","update");
 
+	//Build links from data
 	var link = svg.append("g")
 		.attr("class", "links")
 		.selectAll("line")
@@ -95,16 +99,50 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 //			.attr("stroke-width", function(d) { return d.value; })
 			.attr("stroke-width", function(d) { return 1 + Math.log2(d.value); })
 			.attr("id", function(d) { return d.source.substring(d.source.lastIndexOf("/")+1) + d.target.substring(d.target.lastIndexOf("/")+1); })
-			.on("mouseover", function(d) { d3.select(this).style("stroke",'#900') })
-			.on("mouseout", function(d) { d3.select(this).style("stroke",'#999') })
+			.on("mouseover", function(d) { 
+				d3.select(this).style("stroke",'#900');
+				//Annotation code
+				let type = d3.annotationCallout;
+
+				let annotations = [{
+					note: {
+						title: d.name + ' ' + d.value,
+						wrap: 400
+					},
+					x: (d.source.x + d.target.x)/2,
+					y: (d.source.y + d.target.y)/2,
+					dx: 25,
+					dy: 25,
+					color: "black"
+				}]
+
+				let makeAnnotations = d3.annotation()
+					.type(type)
+					.annotations(annotations);
+
+				svg.attr("class","annotation-group")
+					.append("g")
+					.attr("class","link-annotation")
+					.attr("transform",d3.select(this).attr("transform"))
+//					.style('font-size',"16pt")
+					.call(makeAnnotations);
+			})
+			.on("mouseout", function(d) { 
+				d3.select(this).style("stroke",'#999');
+				d3.select(".link-annotation").remove();
+			})
 			.on("contextmenu", function(d) { d3.event.preventDefault(); });
 
-	link.append("title")
-		.text(function(d) { return d.name + ' ' + d.value; });
+/*	link.append("title")
+		.text(function(d) { return d.name + ' ' + d.value; });*/
 
+	//Select nodes for updating
 	var nodes = svg.selectAll(".nodes")
 		.data(display_graph);
 
+	nodes.attr("class","update");
+
+	//Build nodes from data
 	var node = svg.append("g")
 		.attr("class", "nodes")
 		.selectAll("circle")
@@ -117,6 +155,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 			.attr("class", function(d) { return "group" + d.group; })
 			.on("mouseover", function(d) { 
 				d3.select(this).attr("fill","#900");
+				//Annotation code
 				let type = d3.annotationCallout;
 
 				let annotations = [{
@@ -159,10 +198,12 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 		.attr("cx", function(d) { return d.x; })
 		.attr("cy", function(d) { return d.y; });
 
+	//Make our node objects recognized by the simulation as nodes, apply forces to them
 	simulation
 		.nodes(display_graph.nodes)
 		.on("tick", ticked);
 
+	//Make our link objects recognized by the simulation as links
 	simulation.force("link")
 		.links(display_graph.links);
 
@@ -177,8 +218,8 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 
 	svg.call(zoomer);
 
+	//Remove links and nodes that no longer exist within these bounds
 	links.exit().remove();
-
 	nodes.exit().remove();
 
 	function ticked() {
@@ -197,6 +238,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 		node.attr("transform",d3.event.transform);
 		link.attr("transform",d3.event.transform);
 		d3.select(".node-annotation").attr("transform",d3.event.transform);
+		d3.select(".link-annotation").attr("transform",d3.event.transform);
 		d3.event.transform.rescaleX(xScale);
 		d3.event.transform.rescaleY(yScale);
 	}
@@ -217,56 +259,28 @@ function displayNetwork(display_graph,svg,simulation,color,width,height) {
 		d.fx = null;
 		d.fy = null;
 	}
-
-/*	const type = d3.annotationLabel;
-
-	const annotations = [{
-		note: {
-			label: "Test Label",
-			title: "Test Title"
-		},
-		x: 150,
-		y: 150,
-		dy: 100,
-		dx: 100
-	}]
-
-	const makeAnnotations = d3.annotation()
-		.type(d3.annotationLabel)
-		.annotations(annotations);
-/*		.annotations(display_graph['nodes'].map((d,i) => {
-			return {
-				note: {
-					title: d.name
-				},
-				dx: d.x,
-				dy: d.y,
-				x: d.x + 25,
-				y: d.y + 25
-			}
-		}));*/
-
-/*	svg.attr("class","annotation-group")
-		.append("g")
-		.call(makeAnnotations);*/
 }
 
 function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,network_width,network_height,center_family) {
 	var slider_vals = [handle1, handle2];
 
+	//Define bounds of frame
 	var svg = d3.select("#timeline"),
 		width = +svg.attr("width"),
 		height = +svg.attr("height");
 
+	//Function for converting year to location on timeline
 	var x = d3.scaleLinear()
 		.domain([1880, 1930])
 		.range([0, width-50])
 		.clamp(true);
 
+	//Build and position slider
 	var slider = svg.append("g")
 		.attr("class", "slider")
 		.attr("transform", "translate(25,20)");
 
+	//Create bounds of track
 	slider.append("line")
 		.attr("class", "track")
 		.attr("x1", x.range()[0])
@@ -277,6 +291,7 @@ function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,net
 		.attr("x1",x(slider_vals[0]))
 		.attr("x2",x(slider_vals[1]));
 
+	//Build labels on bottom of track
 	slider.insert("g", ".track-overlay")
 		.attr("class", "ticks")
 		.attr("transform", "translate(0,18)")
@@ -287,14 +302,15 @@ function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,net
 			.attr("text-anchor", "middle")
 			.text(function(d) { return d; });
 
+	//Initialize tooltip object, which is used to show the year the handle is on. When it is hovered over, the year is written and the object is made visible. When the mouse moves off, it is made invisible
 	var tooltip = d3.select("body")
 		.append("div")
 		.style("position","absolute")
 		.style("z-index","10")
 		.style("visibility","hidden")
-		.text("Hello World")
 		.attr("class","tooltip");
 
+	//Build two handles on either end of the timeline
 	var handle = slider.selectAll("handle")
 		.data([0,1])
 		.enter().append("circle", ".track-overlay")
@@ -326,6 +342,7 @@ function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,net
 			x1 = xMin;
 		}
 
+		//Set position of selected handle to be the x position of the cursor
 		d3.select(this).attr("cx",x1);
 
 		var x2 = x(slider_vals[d==0?1:0])
