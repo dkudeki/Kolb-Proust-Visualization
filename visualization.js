@@ -436,11 +436,19 @@ $(function() {
 				displayNetwork(setFocus(work_graph,center_family,start_year,end_year,toggle_choice),svg,simulation,color,width,height,center_family);
 			}
 			else {
-				var m = "clicked: " + key;
-				alert(m);
+				dialog.dialog("open");
+//				var m = "clicked: " + key;
+//				alert(m);
 			}
 
 			this[0]['classList'].remove("context-menu");
 		}
+	});
+
+	dialog = $("#dialog-form").dialog({
+		autoOpen: false,
+		modal: true,
+		width: 400,
+		height: 350
 	});
 });
