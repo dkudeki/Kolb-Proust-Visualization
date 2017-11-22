@@ -2,16 +2,16 @@ buildVisualization();
 
 function buildVisualization() {
 	//Build the frame for the network
-	var svg = d3.select("#network")
+	svg = d3.select("#network")
 		width = +svg.attr("width"),
 		height = +svg.attr("height");
 
-	var color = d3.scaleThreshold()
+	color = d3.scaleThreshold()
 		.domain(d3.range(1,4))
 		.range(['#01416e','#428baf','#96c9f3']);
 
 	//Create links between nodes, sets how much nodes repulse one another, centers the graph
-	var simulation = d3.forceSimulation()
+	simulation = d3.forceSimulation()
 		.force("link", d3.forceLink().id(function(d) { return d.id; }))
 		.force("charge", d3.forceManyBody().strength(-700))
 		.force("center", d3.forceCenter(width / 2, height / 2));
@@ -65,12 +65,13 @@ function buildVisualization() {
 				new_url = new_url.substring(0,new_url.indexOf('?')) + "?center=" + center_family.substring(center_family.lastIndexOf('/')+1);
 			}
 
+			location.href = new_url;
 //			setYear(d3.select("#handle0"),1880,svg,simulation,color,width,height,center_family);
 //			setYear(d3.select("#handle1"),1930,svg,simulation,color,width,height,center_family);
-			changeSliderFocus(work_graph,svg,simulation,color,width,height,center_family)
-			displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height,center_family);
+//			changeSliderFocus(work_graph,svg,simulation,color,width,height,center_family)
+//			displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height,center_family);
 
-			window.history.replaceState(null,null,new_url);
+//			window.history.replaceState(null,null,new_url);
 		}
 
 		d3.select('select').property('value',center_family);
@@ -186,7 +187,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 				d3.select(this).attr("fill", color(d.group))
 				d3.select(".node-annotation").remove();
 			})
-			.on("contextmenu", function(d) { d3.select(this).attr("class","context-menu")})
+			.on("contextmenu", function(d) { d3.select(this).attr("class",d3.select(this).attr("class") + " context-menu")})
 			.call(d3.drag()
 				.on("start", dragstarted)
 				.on("drag", dragged)
@@ -198,6 +199,10 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 	d3.selectAll('g').select("nodes")
 		.attr("cx", function(d) { return d.x; })
 		.attr("cy", function(d) { return d.y; });
+
+	//Remove links and nodes that no longer exist within these bounds
+	links.exit().remove();
+	nodes.exit().remove();
 
 	//Make our node objects recognized by the simulation as nodes, apply forces to them
 	simulation
@@ -218,10 +223,6 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 		.domain([0,height]).range([0, height]);
 
 	svg.call(zoomer);
-
-	//Remove links and nodes that no longer exist within these bounds
-	links.exit().remove();
-	nodes.exit().remove();
 
 	function ticked() {
 		link
@@ -353,6 +354,8 @@ function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,net
 
 		tooltip.style("left",(x1+14) + "px")
 			.text(Math.floor(x.invert(x1)));
+
+		setYear(d3.select(this),x.invert(d3.event.x),work_graph,network_svg,simulation,color,network_width,network_height,center_family);
 	}
 }
 
@@ -398,17 +401,46 @@ $(function() {
 		selector: '.context-menu',
 		items: {
 			"center": {name: "Center Graph on Node"},
-			"degree": {name: "Show Single Degree of Separation"},
+			"degree": {name: "Toggle Degree of Separation"},
 			"annotate": {name: "Add Annotation"}
 		},
 		callback: function(key, options) {
 			if (key == 'center') {
 				location.href = "http://xtf.grainger.illinois.edu/kpnetwork/?center=" + this[0]['id'];
 			}
+			else if (key == 'degree') {
+				//work_graph is global
+				var center_family = 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + $(".group0").attr("id");
+
+				var x = d3.scaleLinear()
+					.domain([1880, 1930])
+					.range([0, d3.select("#timeline").attr("width")-50])
+					.clamp(true);
+
+				var handle0_year = x.invert($("#handle0").attr("cx"));
+				var handle1_year = x.invert($("#handle1").attr("cx"));
+
+				if (handle0_year <= handle1_year) {
+					var start_year = handle0_year;
+					var end_year = handle1_year;
+				}
+				else {
+					var start_year = handle1_year;
+					var end_year = handle0_year;
+				}
+
+				var toggle_choice = true;
+				if ($(".group2").length == 0) {
+					toggle_choice = false;
+				}
+				displayNetwork(setFocus(work_graph,center_family,start_year,end_year,toggle_choice),svg,simulation,color,width,height,center_family);
+			}
 			else {
 				var m = "clicked: " + key;
 				alert(m);
 			}
+
+			this[0]['classList'].remove("context-menu");
 		}
 	});
 });

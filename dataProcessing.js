@@ -1,6 +1,10 @@
-function setFocus(graph,id,start_year,end_year) {
+function setFocus(graph,id,start_year,end_year,single_degree) {
 	var output_graph = { 'nodes': [], 'links': [] };
 	var degree_one = [];
+
+	if (typeof single_degree == 'undefined') {
+		single_degree = false;
+	}
 	var degree_two = [];
 
 //Get target family/node
@@ -63,6 +67,10 @@ function setFocus(graph,id,start_year,end_year) {
 				output_graph['nodes'].push(temp_obj);
 			}
 		}
+	}
+
+	if (single_degree) {
+		return output_graph;
 	}
 
 //Get connections from first-degree families to second-degree families
