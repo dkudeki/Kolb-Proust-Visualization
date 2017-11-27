@@ -1,5 +1,14 @@
 buildVisualization();
 
+function retrieveStorage() {
+	if (localStorage.getItem(window.location.href) != null) {
+		annos = localStorage.getItem(window.location.href);
+		console.log(annos);
+		annoList = JSON.parse(annos);
+		console.log(annoList);
+	}
+}
+
 function buildVisualization() {
 	//Build the frame for the network
 	svg = d3.select("#network")
@@ -22,6 +31,8 @@ function buildVisualization() {
 
 		//Remove proust, then initialize graph with ceter family and date range
 		work_graph = removeID(graph,'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/proust0');
+
+		retrieveStorage();
 
 		//Set center node of graph
 		var current_url = new URL(window.location.href);
@@ -154,15 +165,22 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 			.attr("r", function(d) { return 5 + Math.log2(d.mention_count); })
 			.attr("fill", function(d) { return color(d.group); })
 			.attr("id", function(d) { return d.id.substring(d.id.lastIndexOf("/")+1); })
-			.attr("class", function(d) { return "group" + d.group; })
+			.attr("class", function(d) { return "group" + d.group + (annoList['annotations'].filter(function(annotation) { return (annotation['target'] == d.id); }).length > 0 ? " annotated" : ""); })
 			.on("mouseover", function(d) { 
 				d3.select(this).attr("fill","#900");
 				//Annotation code
 				let type = d3.annotationCallout;
 
+				var hovered_family = d3.select(this).attr("id");
+				var processed_annotation_list = annoList['annotations'].filter(function(annotation) {
+					return (annotation['target'] == ('http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + hovered_family));
+				})
+				console.log(processed_annotation_list);
+
 				let annotations = [{
 					note: {
 						title: makeNameReadable(d.name) + ' ' + d.mention_count,
+						label: (processed_annotation_list.length > 0 ? processed_annotation_list[0]['bodyValue'] : ''),
 						wrap: 400
 					},
 					x: d.x + ((5 + Math.log2(d.mention_count))/Math.sqrt(2)),
@@ -187,7 +205,9 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 				d3.select(this).attr("fill", color(d.group))
 				d3.select(".node-annotation").remove();
 			})
-			.on("contextmenu", function(d) { d3.select(this).attr("class",d3.select(this).attr("class") + " context-menu")})
+			.on("contextmenu", function(d) { 
+				d3.select(this).attr("class",d3.select(this).attr("class") + " context-menu");
+			})
 			.call(d3.drag()
 				.on("start", dragstarted)
 				.on("drag", dragged)
@@ -397,6 +417,19 @@ function setYear(target,new_year,work_graph,network_svg,simulation,color,network
 }
 
 $(function() {
+	var username = "dkudeki";
+//	var annos = '{"annotations":[]}';
+
+	retrieveStorage();
+//	console.log(typeof annos);
+	if (typeof annos === 'undefined') {
+		annos = '{"annotations":[]}';
+	}
+	console.log("FIRST POINT: " + annos);
+
+	var annoList = JSON.parse(annos);
+	var element_id;
+
 	$.contextMenu({
 		selector: '.context-menu',
 		items: {
@@ -436,6 +469,10 @@ $(function() {
 				displayNetwork(setFocus(work_graph,center_family,start_year,end_year,toggle_choice),svg,simulation,color,width,height,center_family);
 			}
 			else {
+//				dialog = displayDialog(this[0]['id']);
+//				dialog_box(this[0]['id']).dialog("open");
+				element_id = this[0]['id'];
+				$("#ui-id-1").text("Add Annotation to " + makeNameReadable((work_graph['nodes'].filter(function(obj) { return obj.id == 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + element_id }))[0].name));
 				dialog.dialog("open");
 //				var m = "clicked: " + key;
 //				alert(m);
@@ -445,10 +482,30 @@ $(function() {
 		}
 	});
 
+	function addAnnotation() {
+		annoList.annotations.push({
+			"@context": "http://www.w3.org/ns/anno.jsonld",
+			"type": "Annotation",
+			"bodyValue": $("#comment")[0].value,
+			"body": $("#link")[0].value,
+			"target": 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + element_id,
+			"creator": username,
+			"id": window.location.href + "/anno" + (annoList.annotations.length + 1)
+		})
+		annos = JSON.stringify(annoList);
+		localStorage.setItem(window.location.href,annos);
+		dialog.dialog("close");
+//		console.log($("#comment")[0].value);
+//		alert($("#comment")[0].value);
+	}
+
 	dialog = $("#dialog-form").dialog({
-		autoOpen: false,
-		modal: true,
-		width: 400,
-		height: 350
+			autoOpen: false,
+			modal: true,
+			width: 400,
+			height: 350,
+			buttons: {
+				"Add Annotation": addAnnotation
+			}
 	});
 });

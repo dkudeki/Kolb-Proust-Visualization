@@ -97,3 +97,31 @@ div[role=dialog] {
 	background-color: white;
 	padding: 10px;
 	border:  1px solid #CCC;
+	font-family: sans-serif;
+}
+
+.ui-dialog-titlebar {
+	text-align: center;
+	margin: 5px;
+}
+
+#ui-id-1 {
+	display: inline-block;
+}
+
+.ui-dialog-titlebar button {
+	float: right;
+}
+
+#dialog-form {
+	margin: 5px;
+}
+
+form input {
+	margin-bottom: 5px;
+}
+
+circle.annotated {
+	stroke-width: 2px;
+	stroke: #ff006a;
+}
