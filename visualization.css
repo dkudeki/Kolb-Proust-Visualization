@@ -125,3 +125,14 @@ circle.annotated {
 	stroke-width: 2px;
 	stroke: #ff006a;
 }
+
+textarea {
+	width: 80%;
+	max-width: 99%;
+	height: 56px;
+	max-height: 56px;
+}
+
+#link {
+	width: 70%;
+}

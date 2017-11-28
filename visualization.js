@@ -124,7 +124,7 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 					},
 					x: (d.source.x + d.target.x)/2,
 					y: (d.source.y + d.target.y)/2,
-					dx: 25,
+					dx: (((d.source.x + d.target.x)/2) + 425 > 960 ? -25 : 25),
 					dy: 25,
 					color: "black"
 				}]
@@ -159,33 +159,39 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 	var node = svg.append("g")
 		.attr("class", "nodes")
 		.selectAll("circle")
-		.data(display_graph.nodes)
+		.data(display_graph.nodes.filter(function(annotation) { return annotation.mention_count > 0; }))
 		.enter().append("circle")
 //			.attr("r", function(d) { return 4 + d.mention_count/2; })
 			.attr("r", function(d) { return 5 + Math.log2(d.mention_count); })
 			.attr("fill", function(d) { return color(d.group); })
 			.attr("id", function(d) { return d.id.substring(d.id.lastIndexOf("/")+1); })
-			.attr("class", function(d) { return "group" + d.group + (annoList['annotations'].filter(function(annotation) { return (annotation['target'] == d.id); }).length > 0 ? " annotated" : ""); })
+			.attr("class", function(d) { return "group" + d.group + (typeof annoList === "undefined" ? "" : (annoList['annotations'].filter(function(annotation) { return (annotation['target'] == d.id); }).length > 0 ? " annotated" : "")); })
 			.on("mouseover", function(d) { 
 				d3.select(this).attr("fill","#900");
 				//Annotation code
 				let type = d3.annotationCallout;
 
 				var hovered_family = d3.select(this).attr("id");
-				var processed_annotation_list = annoList['annotations'].filter(function(annotation) {
-					return (annotation['target'] == ('http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + hovered_family));
-				})
-				console.log(processed_annotation_list);
+				if (typeof annoList === "undefined") {
+					var processed_annotation_list = [];
+				}
+				else {
+					var processed_annotation_list = annoList['annotations'].filter(function(annotation) {
+						return (annotation['target'] == ('http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + hovered_family));
+					})
+				}
+
+				var annotation_starting_offset = (5 + Math.log2(d.mention_count))/Math.sqrt(2);
 
 				let annotations = [{
 					note: {
 						title: makeNameReadable(d.name) + ' ' + d.mention_count,
-						label: (processed_annotation_list.length > 0 ? processed_annotation_list[0]['bodyValue'] : ''),
+						label: (processed_annotation_list.length > 0 ? (processed_annotation_list.length > 1 ? processed_annotation_list.map(a => a.bodyValue).join('\n\n') : processed_annotation_list[0]['bodyValue']) : ''),
 						wrap: 400
 					},
-					x: d.x + ((5 + Math.log2(d.mention_count))/Math.sqrt(2)),
-					y: d.y + ((5 + Math.log2(d.mention_count))/Math.sqrt(2)),
-					dx: 25,
+					x: ((d.x + annotation_starting_offset + 425) > 960 ? d.x - annotation_starting_offset : d.x + annotation_starting_offset ),
+					y: d.y + annotation_starting_offset,
+					dx: ((d.x + annotation_starting_offset + 425) > 960 ? -25 : 25),
 					dy: 25,
 					color: "black"
 				}]
@@ -347,10 +353,14 @@ function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,net
 				d3.drag()
 					.on("start", startDrag)
 					.on("drag", drag)
-					.on("end", function() { setYear(d3.select(this),x.invert(d3.event.x),work_graph,network_svg,simulation,color,network_width,network_height,center_family); }));
+					.on("end", function() { 
+						simulation.alphaTarget(0);
+						setYear(d3.select(this),x.invert(d3.event.x),work_graph,network_svg,simulation,color,network_width,network_height,center_family); 
+					}));
 
 	function startDrag() {
 		d3.select(this).raise().classed("active",true);
+		simulation.alphaTarget(1).restart();
 	}
 
 	function drag(d) {
@@ -502,8 +512,8 @@ $(function() {
 	dialog = $("#dialog-form").dialog({
 			autoOpen: false,
 			modal: true,
-			width: 400,
-			height: 350,
+			width: 500,
+			height: 225,
 			buttons: {
 				"Add Annotation": addAnnotation
 			}
