@@ -442,53 +442,82 @@ $(function() {
 
 	$.contextMenu({
 		selector: '.context-menu',
-		items: {
-			"center": {name: "Center Graph on Node"},
-			"degree": {name: "Toggle Degree of Separation"},
-			"annotate": {name: "Add Annotation"}
-		},
-		callback: function(key, options) {
-			if (key == 'center') {
-				location.href = "http://xtf.grainger.illinois.edu/kpnetwork/?center=" + this[0]['id'];
-			}
-			else if (key == 'degree') {
-				//work_graph is global
-				var center_family = 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + $(".group0").attr("id");
+		selectableSubMenu: true,
+		build: function($trigger, e) {
+			var built_items = {
+				"center": {name: "Center Graph on Node"},
+				"degree": {name: "Toggle Degree of Separation"},
+				"annotate": {name: "Add Annotation"},
+			};
 
-				var x = d3.scaleLinear()
-					.domain([1880, 1930])
-					.range([0, d3.select("#timeline").attr("width")-50])
-					.clamp(true);
+			console.log($trigger);
 
-				var handle0_year = x.invert($("#handle0").attr("cx"));
-				var handle1_year = x.invert($("#handle1").attr("cx"));
+			var target_annotations = annoList.annotations.filter(function(annotation) { return annotation['target'] == 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + $trigger[0]['id'] })
 
-				if (handle0_year <= handle1_year) {
-					var start_year = handle0_year;
-					var end_year = handle1_year;
+			var links = {}
+			for (annotation in target_annotations) {
+				if (target_annotations[annotation]['body'].length > 0) {
+					console.log(target_annotations[annotation]['body']);
+					links[target_annotations[annotation]['body']] = { name: target_annotations[annotation]['body']};
 				}
-				else {
-					var start_year = handle1_year;
-					var end_year = handle0_year;
-				}
-
-				var toggle_choice = true;
-				if ($(".group2").length == 0) {
-					toggle_choice = false;
-				}
-				displayNetwork(setFocus(work_graph,center_family,start_year,end_year,toggle_choice),svg,simulation,color,width,height,center_family);
-			}
-			else {
-//				dialog = displayDialog(this[0]['id']);
-//				dialog_box(this[0]['id']).dialog("open");
-				element_id = this[0]['id'];
-				$("#ui-id-1").text("Add Annotation to " + makeNameReadable((work_graph['nodes'].filter(function(obj) { return obj.id == 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + element_id }))[0].name));
-				dialog.dialog("open");
-//				var m = "clicked: " + key;
-//				alert(m);
 			}
 
-			this[0]['classList'].remove("context-menu");
+			if (!$.isEmptyObject(links)) {
+				built_items["links"] = { name: "Annotated Links", items: links }
+			}
+
+			console.log(built_items);
+
+			return {
+				items: built_items,
+				callback: function(key, options) {
+					if (key == 'center') {
+						location.href = "http://xtf.grainger.illinois.edu/kpnetwork/?center=" + $trigger[0]['id'];
+					}
+					else if (key == 'degree') {
+						//work_graph is global
+						var center_family = 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + $(".group0").attr("id");
+
+						var x = d3.scaleLinear()
+							.domain([1880, 1930])
+							.range([0, d3.select("#timeline").attr("width")-50])
+							.clamp(true);
+
+						var handle0_year = x.invert($("#handle0").attr("cx"));
+						var handle1_year = x.invert($("#handle1").attr("cx"));
+
+						if (handle0_year <= handle1_year) {
+							var start_year = handle0_year;
+							var end_year = handle1_year;
+						}
+						else {
+							var start_year = handle1_year;
+							var end_year = handle0_year;
+						}
+
+						var toggle_choice = true;
+						if ($(".group2").length == 0) {
+							toggle_choice = false;
+						}
+						displayNetwork(setFocus(work_graph,center_family,start_year,end_year,toggle_choice),svg,simulation,color,width,height,center_family);
+					}
+					else if (key == "annotate") {
+		//				dialog = displayDialog(this[0]['id']);
+		//				dialog_box(this[0]['id']).dialog("open");
+						element_id = $trigger[0]['id'];
+						$("#ui-id-1").text("Add Annotation to " + makeNameReadable((work_graph['nodes'].filter(function(obj) { return obj.id == 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + element_id }))[0].name));
+						dialog.dialog("open");
+		//				var m = "clicked: " + key;
+		//				alert(m);
+					}
+					else {
+//						console.log(key);
+						window.open(key,'_blank');
+					}
+
+					$trigger[0]['classList'].remove("context-menu");
+				}
+			}
 		}
 	});
 

@@ -73,7 +73,7 @@ div.annotate {
 .context-menu-list {
 	z-index: 1000;
 	position: absolute;
-	overflow: hidden;
+/*	overflow: hidden;*/
 	border: 1px solid #CCC;
 	white-space: nowrap;
 	font-family: sans-serif;
@@ -91,6 +91,18 @@ div.annotate {
 
 .context-menu-list li:hover {
 	background-color: #DEF;
+}
+
+.context-menu-list li > ul {
+	visibility: hidden;
+}
+
+.context-menu-list li:hover > ul {
+	visibility: visible;
+}
+
+.context-menu-list li:hover > ul > li {
+	z-index: 1001;
 }
 
 div[role=dialog] {
