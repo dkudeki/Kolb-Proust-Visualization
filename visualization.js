@@ -111,8 +111,10 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 //			.attr("stroke-width", function(d) { return d.value; })
 			.attr("stroke-width", function(d) { return 1 + Math.log2(d.value); })
 			.attr("id", function(d) { return d.source.substring(d.source.lastIndexOf("/")+1) + d.target.substring(d.target.lastIndexOf("/")+1); })
+			.attr("class", function(d) { return "link_degree" + d.degree; })
 			.on("mouseover", function(d) { 
-				d3.select(this).style("stroke",'#900');
+//				d3.select(this).style("stroke",'#900').style("stroke-opacity",'0.6');
+				d3.select(this).attr("class","link_highlighted");
 				//Annotation code
 				let type = d3.annotationCallout;
 
@@ -141,7 +143,8 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 					.call(makeAnnotations);
 			})
 			.on("mouseout", function(d) { 
-				d3.select(this).style("stroke",'#999');
+//				d3.select(this).style("stroke",'#999').style("stroke-opacity",);
+				d3.select(this).attr("class", function(d) { return "link_degree" + d.degree; });
 				d3.select(".link-annotation").remove();
 			});
 //			.on("contextmenu", function(d) { d3.event.preventDefault(); });
@@ -472,7 +475,19 @@ $(function() {
 				items: built_items,
 				callback: function(key, options) {
 					if (key == 'center') {
-						location.href = "http://xtf.grainger.illinois.edu/kpnetwork/?center=" + $trigger[0]['id'];
+						var current_url = new URL(window.location.href);
+						var new_url = current_url.href;
+						if (current_url.href.indexOf('?') == -1) {
+							new_url += '?center=' + $trigger[0]['id'];
+						}
+						else {
+							new_url = new_url.substring(0,new_url.indexOf('?')) + "?center=" + $trigger[0]['id'];
+						}
+
+						location.href = new_url;
+
+						
+//						location.href = "http://kolbproust.library.illinois.edu/proust/kpnetwork/?center=" + $trigger[0]['id'];
 					}
 					else if (key == 'degree') {
 						//work_graph is global
@@ -499,7 +514,10 @@ $(function() {
 						if ($(".group2").length == 0) {
 							toggle_choice = false;
 						}
+						simulation.alphaTarget(1).restart();
 						displayNetwork(setFocus(work_graph,center_family,start_year,end_year,toggle_choice),svg,simulation,color,width,height,center_family);
+						simulation.alphaTarget(0);
+
 					}
 					else if (key == "annotate") {
 		//				dialog = displayDialog(this[0]['id']);

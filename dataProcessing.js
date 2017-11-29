@@ -34,7 +34,7 @@ function setFocus(graph,id,start_year,end_year,single_degree) {
 					value_sum += graph['links'][index]['value'][y]
 				}
 			}
-			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': value_sum, 'name': graph['links'][index]['name'] };
+			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': value_sum, 'name': graph['links'][index]['name'], 'degree': 1 };
 //			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': graph['links'][index]['value'], 'name': graph['links'][index]['name'] };
 
 			if (value_sum > 0) {
@@ -70,6 +70,24 @@ function setFocus(graph,id,start_year,end_year,single_degree) {
 	}
 
 	if (single_degree) {
+		//Get connections from first-degree families to other first-degree families
+		for (var index = 0; index < graph['links'].length; index++) {
+			if (degree_one.includes(graph['links'][index]['source']) && degree_one.includes(graph['links'][index]['target'])) {
+				var value_sum = 0;
+				for (y in graph['links'][index]['value']) {
+					if (y >= start_year && y <= end_year) {
+						value_sum += graph['links'][index]['value'][y]
+					}
+				}
+				var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': value_sum, 'name': graph['links'][index]['name'], 'degree': 2 };
+	//			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': graph['links'][index]['value'], 'name': graph['links'][index]['name'] };
+
+				if (value_sum > 0) {
+					output_graph['links'].push(temp_obj);
+				}
+			}
+		}
+
 		return output_graph;
 	}
 
@@ -82,7 +100,7 @@ function setFocus(graph,id,start_year,end_year,single_degree) {
 					value_sum += graph['links'][index]['value'][y]
 				}
 			}
-			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': value_sum, 'name': graph['links'][index]['name'] };
+			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': value_sum, 'name': graph['links'][index]['name'], 'degree': 2 };
 //			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': graph['links'][index]['value'], 'name': graph['links'][index]['name'] };
 
 			if (value_sum > 0) {
@@ -123,7 +141,7 @@ function setFocus(graph,id,start_year,end_year,single_degree) {
 					value_sum += graph['links'][index]['value'][y]
 				}
 			}
-			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': value_sum, 'name': graph['links'][index]['name'] };
+			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': value_sum, 'name': graph['links'][index]['name'], 'degree': 3 };
 //			var temp_obj = { 'source': graph['links'][index]['source'], 'target': graph['links'][index]['target'], 'value': graph['links'][index]['value'], 'name': graph['links'][index]['name'] };
 
 			if (value_sum > 0) {
