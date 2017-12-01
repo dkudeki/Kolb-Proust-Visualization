@@ -49,8 +49,9 @@ function buildVisualization() {
 		var end_year = 1930;
 
 		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height,center_family);
-
 		setupSlider(start_year,end_year,work_graph,svg,simulation,color,width,height,center_family);
+		$("#container").prepend($("#timeline"));
+		$("#container").prepend($("#network"));
 
 		//Build selection dropdown
 		var select = d3.select('body')
@@ -60,7 +61,7 @@ function buildVisualization() {
 
 		var options = select
 			.selectAll('option')
-			.data(work_graph['nodes']).enter()
+			.data(work_graph['nodes'].sort(function(a,b) { return ( a.name > b.name ? 1 : ( a.name < b.name ? -1 : 0 ) ) })).enter()
 			.append('option')
 				.text(function(d) { return d.name })
 				.attr('value', function(d) { return d.id });
@@ -86,6 +87,16 @@ function buildVisualization() {
 		}
 
 		d3.select('select').property('value',center_family);
+
+		let target_object = work_graph['nodes'].filter(function(obj) { return obj.id == 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + $(".group0").attr("id") });
+		let graph_title = makeNameReadable(target_object[0].name);
+		console.log(target_object[0].mention_count);
+		console.log(Object.keys(target_object[0].mention_count).length);
+		graph_title = graph_title.substring(0,graph_title.length-1) + " Appears in " + Object.keys(target_object[0].mention_count).reduce(function(sum,key) { return sum + parseInt(target_object[0].mention_count[key]); },0) + " Cards";
+		let card_start_year = parseInt(Object.keys(target_object[0].mention_count)[0]);
+		let card_end_year = parseInt(Object.keys(target_object[0].mention_count)[Object.keys(target_object[0].mention_count).length-1])
+		graph_title += " From " + ( card_start_year == card_end_year ? card_start_year : card_start_year + "-" + card_end_year );
+		$("#graph_title").text(graph_title);
 	});
 }
 
@@ -252,6 +263,16 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 		.domain([0,height]).range([0, height]);
 
 	svg.call(zoomer);
+
+/*	let target_object = work_graph['nodes'].filter(function(obj) { return obj.id == 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + $(".group0").attr("id") });
+	let graph_title = makeNameReadable(target_object[0].name);
+	console.log(target_object[0].mention_count);
+	console.log(Object.keys(target_object[0].mention_count).length);
+	graph_title = graph_title.substring(0,graph_title.length-1) + " Appears in " + Object.keys(target_object[0].mention_count).reduce(function(sum,key) { return sum + parseInt(target_object[0].mention_count[key]); },0) + " Cards";
+	let card_start_year = parseInt(Object.keys(target_object[0].mention_count)[0]);
+	let card_end_year = parseInt(Object.keys(target_object[0].mention_count)[Object.keys(target_object[0].mention_count).length-1])
+	graph_title += " From " + ( card_start_year == card_end_year ? card_start_year : card_start_year + "-" + card_end_year );
+	$("#graph_title").text(graph_title);*/
 
 	function ticked() {
 		link
@@ -564,5 +585,19 @@ $(function() {
 			buttons: {
 				"Add Annotation": addAnnotation
 			}
+	});
+
+	$("#view_annotations").click(function(event) {
+		let download_file = document.createElement('a');
+		let header = 'data:application/json;charset=utf-8,';
+		download_file.setAttribute('href',header + encodeURIComponent(annos));
+		download_file.setAttribute('download',$(".group0").attr("id") + '_annotations.json');
+		let clickReplacement = new MouseEvent('click', {
+			'view': window,
+			'bubbles': true,
+			'cancleable': false
+		});
+		download_file.dispatchEvent(clickReplacement);
+//		alert("Hello World!"); 
 	});
 });

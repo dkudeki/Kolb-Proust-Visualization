@@ -19,6 +19,9 @@
 <body>
 	<script src="visualization.js"></script>
 	<script src="dataProcessing.js"></script>
+	<div id="container">
+		<div id="graph_title"></div>
+	</div>
 
 	<div id="dialog-form" title="Add Annotation">
 		<form>
@@ -28,5 +31,8 @@
 			<input type="url" id="link">
 		</form>
 	</div>
+	<div id="annotations_display" title="Annotations In JSON Format"></div>
+
+	<button id="view_annotations">Get Annotations As JSON</button>
 </body>
 </html>
