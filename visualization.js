@@ -17,7 +17,8 @@ function buildVisualization() {
 
 	color = d3.scaleThreshold()
 		.domain(d3.range(1,4))
-		.range(['#01416e','#428baf','#96c9f3']);
+		.range(['#660099','#c299d6','#e8d9f0']);
+//		.range(['#01416e','#428baf','#96c9f3']);
 
 	//Create links between nodes, sets how much nodes repulse one another, centers the graph
 	simulation = d3.forceSimulation()
@@ -50,8 +51,9 @@ function buildVisualization() {
 
 		displayNetwork(setFocus(work_graph,center_family,start_year,end_year,true),svg,simulation,color,width,height,center_family);
 		setupSlider(start_year,end_year,work_graph,svg,simulation,color,width,height,center_family);
-		$("#container").prepend($("#timeline"));
-		$("#container").prepend($("#network"));
+		$("#network").insertAfter($("#page_title"));
+		$("#timeline").insertAfter($("#network"));
+//		$("#container").prepend($("#network"));
 
 		//Build selection dropdown
 		var select = d3.select('body')
@@ -97,6 +99,10 @@ function buildVisualization() {
 		let card_end_year = parseInt(Object.keys(target_object[0].mention_count)[Object.keys(target_object[0].mention_count).length-1])
 		graph_title += " From " + ( card_start_year == card_end_year ? card_start_year : card_start_year + "-" + card_end_year );
 		$("#graph_title").text(graph_title);
+		let diameter = 2 * $(".group0").attr("r");
+		$("#example_focus").css("width",diameter).css("height",diameter).css("top",$("#graph_title").offset().top).css("left",$("#graph_title").offset().left - 5 - diameter);
+		console.log($("#graph_title").offset().top);
+//		$("#example_focus").css("top",)
 	});
 }
 

@@ -194,29 +194,64 @@ textarea {
 	opacity: 0.75;
 }
 
-#graph_title {
-	font-family: sans-serif;
-	font-weight: bold;
-	color: #01416e;
-}
-
 #container {
 	width: 960px;
 }
 
 #graph_title {
+	font-family: sans-serif;
+	font-weight: bold;
+	text-align: center;
+	width: fit-content;
+	margin: auto;
+}
+
+#page_title {
+	font-family: sans-serif;;
+	font-weight: bold;
+	font-size: 14pt;
 	text-align: center;
 }
 
 .select {
 	position: absolute;
-	top: 625px;
+	top: 10px;
 	left: 970px;
 	z-index: 1;
+	font-size: 14pt;
 }
 
 #view_annotations {
 	position: absolute;
-	top: 655px;
+	top: 45px;
 	left: 970px;
+
+	-webkit-border-radius: 4;
+	-moz-border-radius: 4;
+	border-radius: 4px;
+	border: none;
+	font-family: sans-serif;
+	color: #ffffff;
+	font-size: 15px;
+	background: #ff006a;
+	padding: 10px 20px 10px 20px;
+	outline: none;
+}
+
+#view_annotations:hover {
+	background: #fa5091;
+	outline: none;
+	border: none;
+}
+
+#view_annotations:active {
+	outline: none;
+	border: none;
+	top: 46px;
+}
+
+#example_focus {
+	border-radius: 50%;
+	background: #660099;
+	position: absolute;
 }
