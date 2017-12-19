@@ -158,6 +158,10 @@ div[role=dialog] {
 	padding-bottom: 10px;
 }
 
+.ui-dialog {
+	z-index: 100;
+}
+
 form input {
 	margin-bottom: 5px;
 }
@@ -208,6 +212,7 @@ textarea {
 	position: absolute;
 	top: 625px;
 	left: 970px;
+	z-index: 1;
 }
 
 #view_annotations {

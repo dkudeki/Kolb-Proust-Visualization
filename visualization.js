@@ -48,7 +48,7 @@ function buildVisualization() {
 		var start_year = 1880;
 		var end_year = 1930;
 
-		displayNetwork(setFocus(work_graph,center_family,start_year,end_year),svg,simulation,color,width,height,center_family);
+		displayNetwork(setFocus(work_graph,center_family,start_year,end_year,true),svg,simulation,color,width,height,center_family);
 		setupSlider(start_year,end_year,work_graph,svg,simulation,color,width,height,center_family);
 		$("#container").prepend($("#timeline"));
 		$("#container").prepend($("#network"));
@@ -362,6 +362,8 @@ function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,net
 		.style("visibility","hidden")
 		.attr("class","tooltip");
 
+	var toggle_status = true;
+
 	//Build two handles on either end of the timeline
 	var handle = slider.selectAll("handle")
 		.data([0,1])
@@ -379,10 +381,16 @@ function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,net
 					.on("drag", drag)
 					.on("end", function() { 
 						simulation.alphaTarget(0);
-						setYear(d3.select(this),x.invert(d3.event.x),work_graph,network_svg,simulation,color,network_width,network_height,center_family); 
+						setYear(d3.select(this),x.invert(d3.event.x),work_graph,network_svg,simulation,color,network_width,network_height,center_family,toggle_status); 
 					}));
 
 	function startDrag() {
+		if ($(".group2").length == 0) {
+			toggle_status = true;
+		}
+		else {
+			toggle_status = false;
+		}
 		d3.select(this).raise().classed("active",true);
 		simulation.alphaTarget(1).restart();
 	}
@@ -409,20 +417,20 @@ function setupSlider(handle1,handle2,work_graph,network_svg,simulation,color,net
 		tooltip.style("left",(x1+14) + "px")
 			.text(Math.floor(x.invert(x1)));
 
-		setYear(d3.select(this),x.invert(d3.event.x),work_graph,network_svg,simulation,color,network_width,network_height,center_family);
+		setYear(d3.select(this),x.invert(d3.event.x),work_graph,network_svg,simulation,color,network_width,network_height,center_family,toggle_status);
 	}
 }
 
-function changeSliderFocus(work_graph,svg,simulation,color,width,height,center_family) {
+/*function changeSliderFocus(work_graph,svg,simulation,color,width,height,center_family) {
 	d3.selectAll("handle")
 		.call(
 			d3.drag()
 				.on("end", function() { setYear(d3.select(this),x.invert(d3.event.x),work_graph,network_svg,simulation,color,network_width,network_height); }))
 	setYear(d3.select("#handle0"),1880,work_graph,svg,simulation,color,width,height,center_family);
 	setYear(d3.select("#handle1"),1930,work_graph,svg,simulation,color,width,height,center_family);
-}
+}*/
 
-function setYear(target,new_year,work_graph,network_svg,simulation,color,network_width,network_height,center_family) {
+function setYear(target,new_year,work_graph,network_svg,simulation,color,network_width,network_height,center_family,toggle_status) {
 	var slider = d3.select(".slider");
 	var x = d3.scaleLinear()
 		.domain([1880, 1930])
@@ -447,7 +455,7 @@ function setYear(target,new_year,work_graph,network_svg,simulation,color,network
 	}
 
 //		alert(start_year + "-" + end_year);
-	displayNetwork(setFocus(work_graph,center_family,start_year,end_year),network_svg,simulation,color,network_width,network_height,center_family);
+	displayNetwork(setFocus(work_graph,center_family,start_year,end_year,toggle_status),network_svg,simulation,color,network_width,network_height,center_family);
 }
 
 $(function() {
