@@ -98,9 +98,9 @@ function buildVisualization() {
 		let card_start_year = parseInt(Object.keys(target_object[0].mention_count)[0]);
 		let card_end_year = parseInt(Object.keys(target_object[0].mention_count)[Object.keys(target_object[0].mention_count).length-1])
 		graph_title += " From " + ( card_start_year == card_end_year ? card_start_year : card_start_year + "-" + card_end_year );
-		$("#graph_title").text(graph_title);
 		let diameter = 2 * $(".group0").attr("r");
-		$("#example_focus").css("width",diameter).css("height",diameter).css("top",$("#graph_title").offset().top).css("left",$("#graph_title").offset().left - 5 - diameter);
+		$("#graph_title").append("<span id='title_text'>" + graph_title + "</span>");
+		$("#example_focus").css("width",diameter).css("height",diameter).css("left",$("#title_text").position().left - 5 - diameter);
 		console.log($("#graph_title").offset().top);
 //		$("#example_focus").css("top",)
 	});
