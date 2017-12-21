@@ -253,3 +253,11 @@ textarea {
 	background: #660099;
 	position: absolute;
 }
+
+#note {
+	font-family: sans-serif;
+	position: absolute;
+	top: 90px;
+	left: 970px;
+	font-size: 11px;
+}
