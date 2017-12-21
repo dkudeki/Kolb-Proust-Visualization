@@ -201,12 +201,14 @@ function displayNetwork(display_graph,svg,simulation,color,width,height,center_f
 					})
 				}
 
+				console.log(processed_annotation_list);
+
 				var annotation_starting_offset = (5 + Math.log2(d.mention_count))/Math.sqrt(2);
 
 				let annotations = [{
 					note: {
 						title: makeNameReadable(d.name) + ' ' + d.mention_count,
-						label: (processed_annotation_list.length > 0 ? (processed_annotation_list.length > 1 ? processed_annotation_list.map(a => a.bodyValue).join('\n\n') : processed_annotation_list[0]['bodyValue']) : ''),
+						label: (processed_annotation_list.length > 0 ? (typeof processed_annotation_list[0]['body'] === 'object' ? (processed_annotation_list[0]['body'].length === 2 ? processed_annotation_list[0]['body'][0]['value'] : processed_annotation_list[0]['body']['value']) : '') : ''),
 						wrap: 400
 					},
 					x: ((d.x + annotation_starting_offset + 425) > 960 ? d.x - annotation_starting_offset : d.x + annotation_starting_offset ),
@@ -495,8 +497,13 @@ $(function() {
 			var links = {}
 			for (annotation in target_annotations) {
 				if (target_annotations[annotation]['body'].length > 0) {
+					if (typeof target_annotations[annotation]['body'] === 'object' && target_annotations[annotation]['body'].length > 1) {
+						links[target_annotations[annotation]['body']] = { name: target_annotations[annotation]['body'][1]};
+					}
+					else if (typeof target_annotations[annotation]['body'] === 'string') {
+						links[target_annotations[annotation]['body']] = { name: target_annotations[annotation]['body']};
+					}
 					console.log(target_annotations[annotation]['body']);
-					links[target_annotations[annotation]['body']] = { name: target_annotations[annotation]['body']};
 				}
 			}
 
@@ -575,11 +582,12 @@ $(function() {
 	});
 
 	function addAnnotation() {
+		console.log($("#comment")[0].value);
+		console.log($("#link")[0].value);
 		annoList.annotations.push({
 			"@context": "http://www.w3.org/ns/anno.jsonld",
 			"type": "Annotation",
-			"bodyValue": $("#comment")[0].value,
-			"body": $("#link")[0].value,
+			"body": ($("#comment")[0].value.length > 0 && $("#link")[0].value.length > 0 ? [{ "type": "TextualBody", "value": $("#comment")[0].value, "format": "text/plain" },$("#link")[0].value] : ($("#comment")[0].value.length > 0 ? { "type": "TextualBody", "value": $("#comment")[0].value, "format": "text/plain" } : $("#link")[0].value)),
 			"target": 'http://catalogdata.library.illinois.edu/lod/entities/Persons/kp/' + element_id,
 			"creator": username,
 			"id": window.location.href + "/anno" + (annoList.annotations.length + 1)
